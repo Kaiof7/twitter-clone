@@ -11,29 +11,26 @@ import logging
 import os
 from dotenv import load_dotenv
 
-from models import User
-from database import get_db
-from schemas import UserOut, UserUpdate
+from backend.models import User
+from backend.database import get_db
+from backend.schemas import UserOut, UserUpdate   # <-- CORRIGIDO AQUI!
 
 # Configuração básica de logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Carregar variáveis de ambiente
 load_dotenv()
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
 
-# Configurações
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
     logger.error("SECRET_KEY não configurada nas variáveis de ambiente")
     raise ValueError("SECRET_KEY não configurada nas variáveis de ambiente")
-    
+
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Configuração de segurança
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/users/login")
 

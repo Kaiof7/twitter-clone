@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Boolean, Index  # Adicione Index aqui
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Text, Boolean, Index
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from database import Base
+from backend.database import Base
 
 class User(Base):
     __tablename__ = "users"
@@ -12,8 +12,14 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     is_active = Column(Boolean, server_default='true', nullable=False)
-    
-    tweets = relationship("Tweet", back_populates="owner", cascade="all, delete-orphan", lazy="dynamic")
+
+    # ⚠️ Removido lazy="dynamic" → quebra Pydantic e FastAPI
+    tweets = relationship(
+        "Tweet",
+        back_populates="owner",
+        cascade="all, delete-orphan"
+    )
+
 
 class Tweet(Base):
     __tablename__ = "tweets"
@@ -22,11 +28,9 @@ class Tweet(Base):
     content = Column(Text, nullable=False)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    
-    # Índices
+
     __table_args__ = (
         Index('ix_tweets_owner_id', 'owner_id'),
-        # Remova a configuração de full-text search se não for usar agora
     )
-    
+
     owner = relationship("User", back_populates="tweets")
